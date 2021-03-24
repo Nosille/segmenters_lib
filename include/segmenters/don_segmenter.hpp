@@ -5,6 +5,8 @@
 #ifndef SEGMENTERS_INCLUDE_SEGMENTERS_DON_SEGMENTER_HPP_
 #define SEGMENTERS_INCLUDE_SEGMENTERS_DON_SEGMENTER_HPP_
 
+#include "segmenters/base_segmenter.hpp"
+
 #include <pcl/features/don.h>            // pcl::DifferenceOfNormalsEstimation
 #include <pcl/features/normal_3d_omp.h>  // pcl::NormalEstimationOMP
 #include <pcl/filters/conditional_removal.h>    // pcl::ConditionalRemoval
@@ -12,8 +14,6 @@
 #include <pcl/segmentation/extract_clusters.h>  // pcl::EuclideanClusterExtraction
 #include <string>
 #include <vector>
-
-#include "segmenters/base_segmenter.hpp"
 
 namespace autosense {
 namespace segmenter {

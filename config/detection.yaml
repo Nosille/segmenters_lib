@@ -1,7 +1,7 @@
 detect: {
-  frame_id: "velodyne",
+  frame_id: "velodyne0",
 
-  sub_pc_topic: "/kitti/points_raw",
+  sub_pc_topic: "/lidar/merged",
   sub_pc_queue_size: 1,
 
   pub_pc_ground_topic: "/segmenter/points_ground",
@@ -29,6 +29,6 @@ detect: {
   ## Object Builder
   # type: bool
   # default: false
-  is_object_builder_open: true,
+  is_object_builder_open: false,
   pub_objects_segmented_topic: "/segmenter/objects_segmented",
 }

@@ -104,7 +104,7 @@ void DoNSegmenter::segment(const PointICloud &cloud_in,
         clusters_indices.begin();
     for (; iter != clusters_indices.end(); ++iter) {
         PointICloudPtr cluster(new PointICloud);
-        pcl::copyPointCloud<PointN, PointI>(*don_cloud_filtered, *iter,
+        pcl::copyPointCloud<PointN, PointI>(*don_cloud_filtered, 
                                             *cluster);
 
         cloud_clusters.push_back(cluster);

@@ -3,13 +3,13 @@
  * Gary Chan <chenshj35@mail2.sysu.edu.cn>
  */
 #include "segmenters/region_euclidean_segmenter.hpp"
+#include "object_builders/object_builder_manager.hpp"  // object_builder::createObjectBuilder()
 
 #include <ros/ros.h>
 
 #include "common/bounding_box.hpp"
 #include "common/geometry.hpp"  // common::geometry::calcCylinderDist
 #include "common/time.hpp"      // common::Clock
-#include "object_builders/object_builder_manager.hpp"  // object_builder::createObjectBuilder()
 
 namespace autosense {
 namespace segmenter {

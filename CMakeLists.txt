@@ -15,8 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
     #std_msgs
     #sensor_msgs
     # ROS PCL
-    #pcl_conversions
-    #pcl_ros
+    pcl_conversions
+    pcl_ros
     # 3rd modules for ROS, like Eigen
     cmake_modules
     # local packages
@@ -26,13 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 ### PCL
-find_package(PCL 1.7 REQUIRED COMPONENTS
-    common
-    io
-    filters
-    features
-    segmentation
-)
+find_package(PCL 1.10.1 REQUIRED)
 add_definitions(${PCL_DEFINITIONS})
 link_directories(${PCL_LIBRARY_DIRS})
 ### Eigen
