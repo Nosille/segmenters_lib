@@ -26,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 ### PCL
-find_package(PCL 1.10.1 REQUIRED)
+find_package(PCL REQUIRED)
 add_definitions(${PCL_DEFINITIONS})
 #link_directories(${PCL_LIBRARY_DIRS})
 ### Eigen

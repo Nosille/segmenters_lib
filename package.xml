@@ -39,6 +39,8 @@
   <build_depend>common_lib</build_depend>
   <build_depend>roi_filters_lib</build_depend>
   <depend>object_builders_lib</depend>
+  <depend>pcl_ros</depend>
+  <depend>pcl_conversions</depend>
   <!--   <build_depend>message_generation</build_depend> -->
   <!-- Use build_export_depend for packages you need in order to build against this package: -->
   <!--   <build_export_depend>message_generation</build_export_depend> -->
