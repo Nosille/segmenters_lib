@@ -65,6 +65,7 @@ include_directories(
 add_library(${PROJECT_NAME}
     src/ground_plane_fitting_segmenter.cpp
     src/ground_ransac_segmenter.cpp
+    src/ground_progressive_morphological_filter.cpp
     src/euclidean_segmenter.cpp
     src/region_euclidean_segmenter.cpp
     src/region_growing_segmenter.cpp

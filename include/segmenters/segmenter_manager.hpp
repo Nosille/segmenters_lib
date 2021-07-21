@@ -14,6 +14,7 @@
 // ground segmenters
 #include "segmenters/ground_plane_fitting_segmenter.hpp"
 #include "segmenters/ground_ransac_segmenter.hpp"
+#include "segmenters/ground_progressive_morphological_filter.hpp"
 // non-ground segmenters
 #include "segmenters/don_segmenter.hpp"
 #include "segmenters/euclidean_segmenter.hpp"
@@ -36,6 +37,10 @@ static std::unique_ptr<BaseSegmenter> createGroundSegmenter(
         segmenter =
             std::unique_ptr<BaseSegmenter>(new GroundRANSACSegmenter(params));
         ROS_INFO("[segment] Instance of RANSAC Ground Segmenter created.");
+    } else if (params.segmenter_type == "GroundProgressiveMorphologicalFilter") {
+        segmenter =
+            std::unique_ptr<BaseSegmenter>(new GroundProgressiveMorphologicalFilter(params));
+        ROS_INFO("[segment] Instance of Progressive Morphological Filter created.");    
     } else {
         ROS_ERROR_STREAM("The ground remover " << params.segmenter_type
                                                << " was not implemented.");
