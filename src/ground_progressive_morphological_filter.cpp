@@ -48,7 +48,7 @@ void GroundProgressiveMorphologicalFilter::segment(
     bool ground_removed = false;
 
     common::Clock clock;
-    ROS_INFO("Starting GroundProgressiveMorphologicalFilter.");
+    ROS_DEBUG("Starting GroundProgressiveMorphologicalFilter.");
 
     PointICloudPtr cloud(new PointICloud);
     *cloud = cloud_in;
@@ -89,7 +89,7 @@ void GroundProgressiveMorphologicalFilter::segment(
     cloud_clusters.push_back(cloud_ground);
     cloud_clusters.push_back(cloud_nonground);
 
-    ROS_INFO_STREAM("Segmentation complete. Took " << clock.takeRealTime()
+    ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
                                                    << "ms.");
 }
 

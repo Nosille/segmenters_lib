@@ -49,7 +49,7 @@ void RegionEuclideanSegmenter::segment(
     cloud_clusters.clear();
 
     common::Clock clock;
-    ROS_INFO("Starting Region Euclidean segmentation.");
+    ROS_DEBUG("Starting Region Euclidean segmentation.");
 
     PointICloudPtr cloud(new PointICloud);
     *cloud = cloud_in;
@@ -234,7 +234,7 @@ void RegionEuclideanSegmenter::segment(
     }
 #endif
 
-    ROS_INFO_STREAM("RegionEuclideanSegmenter Segmentation complete. Took "
+    ROS_DEBUG_STREAM("RegionEuclideanSegmenter Segmentation complete. Took "
                     << clock.takeRealTime() << "ms.");
 }
 

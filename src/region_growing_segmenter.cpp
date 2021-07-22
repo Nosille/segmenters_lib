@@ -26,12 +26,12 @@ RegionGrowingSegmenter::RegionGrowingSegmenter(const SegmenterParams &params)
         } else {
             normal_estimator_omp_.setRadiusSearch(
                 params_.rg_radius_for_normals);
-            ROS_INFO_STREAM("Region Growing normals estimation based on radius "
+            ROS_DEBUG_STREAM("Region Growing normals estimation based on radius "
                             << params_.rg_radius_for_normals << ".");
         }
     } else {
         normal_estimator_omp_.setKSearch(params_.rg_knn_for_normals);
-        ROS_INFO_STREAM("Region Growing normals estimation based on knn "
+        ROS_DEBUG_STREAM("Region Growing normals estimation based on knn "
                         << params_.rg_knn_for_normals << ".");
     }
 
@@ -66,7 +66,7 @@ void RegionGrowingSegmenter::segment(
     cloud_clusters.clear();
 
     common::Clock clock;
-    ROS_INFO("Starting region growing segmentation.");
+    ROS_DEBUG("Starting region growing segmentation.");
 
     PointICloudPtr cloud(new PointICloud);
     *cloud = cloud_in;
@@ -75,7 +75,7 @@ void RegionGrowingSegmenter::segment(
     NormalCloudPtr normals(new NormalCloud);
     normal_estimator_omp_.setInputCloud(cloud);
     normal_estimator_omp_.compute(*normals);
-    ROS_INFO_STREAM("Normals are computed. Took " << clock.takeRealTime()
+    ROS_DEBUG_STREAM("Normals are computed. Took " << clock.takeRealTime()
                                                   << "ms.");
 
     // Remove points with high curvature.
@@ -120,7 +120,7 @@ void RegionGrowingSegmenter::segment(
         pc_clusters.push_back(cloud_ground);
     }*/
 
-    ROS_INFO_STREAM("Segmentation complete. Took " << clock.takeRealTime()
+    ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
                                                    << "ms.");
 }
 

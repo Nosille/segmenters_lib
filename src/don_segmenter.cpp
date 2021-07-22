@@ -53,7 +53,7 @@ void DoNSegmenter::segment(const PointICloud &cloud_in,
     cloud_clusters.clear();
 
     common::Clock clock;
-    ROS_INFO("Starting Difference of Normals segmentation.");
+    ROS_DEBUG("Starting Difference of Normals segmentation.");
 
     PointICloudPtr cloud(new PointICloud);
     *cloud = cloud_in;
@@ -110,7 +110,7 @@ void DoNSegmenter::segment(const PointICloud &cloud_in,
         cloud_clusters.push_back(cluster);
     }
 
-    ROS_INFO_STREAM("Segmentation complete. Took " << clock.takeRealTime()
+    ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
                                                    << "ms.");
 }
 

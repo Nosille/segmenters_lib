@@ -34,7 +34,7 @@ void EuclideanSegmenter::segment(const PointICloud &cloud_in,
     cloud_clusters.clear();
 
     common::Clock clock;
-    ROS_INFO("Starting Euclidean segmentation.");
+    ROS_DEBUG("Starting Euclidean segmentation.");
 
     PointICloudPtr cloud(new PointICloud);
     *cloud = cloud_in;
@@ -55,7 +55,7 @@ void EuclideanSegmenter::segment(const PointICloud &cloud_in,
         }
     }
 
-    ROS_INFO_STREAM("Segmentation complete. Took " << clock.takeRealTime()
+    ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
                                                    << "ms.");
 }
 

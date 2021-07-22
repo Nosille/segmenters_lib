@@ -57,7 +57,7 @@ void GroundRANSACSegmenter::segment(
     bool ground_removed = false;
 
     common::Clock clock;
-    ROS_INFO("Starting Ground RANSAC segmentation.");
+    ROS_DEBUG("Starting Ground RANSAC segmentation.");
 
     PointICloudPtr cloud(new PointICloud);
     *cloud = cloud_in;
@@ -193,7 +193,7 @@ void GroundRANSACSegmenter::segment(
             *pc_ground += *cloud_ground;
         }
 
-        ROS_INFO_STREAM("Ground removed. Took " << clock.takeRealTime()
+        ROS_DEBUG_STREAM("Ground removed. Took " << clock.takeRealTime()
                                                 << " ms.");
 
         return true;
@@ -202,7 +202,7 @@ void GroundRANSACSegmenter::segment(
     }
 #endif
 
-    ROS_INFO_STREAM("Segmentation complete. Took " << clock.takeRealTime()
+    ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
                                                    << "ms.");
 }
 
