@@ -72,7 +72,7 @@ void RegionEuclideanSegmenter::segment(
      * <1> divide the space into nested circular regions centred at the sensor
      * <2> different distance thresholds are applied
      */
-    boost::array<std::vector<int>, region_upper_bound_> nested_regions;
+    boost::array<pcl::PointIndices, region_upper_bound_> nested_regions;
 
     // ROS_WARN_STREAM("nested_regions.size() = " << nested_regions.size());
     // <1> divide the space into nested circular regions centred at the sensor
@@ -87,7 +87,7 @@ void RegionEuclideanSegmenter::segment(
         for (size_t region = 0u; region < params_.rec_region_size; ++region) {
             if (dist > rRange &&
                 dist <= (rRange + params_.rec_region_sizes[region])) {
-                nested_regions[region].push_back(pt);
+                nested_regions[region].indices.push_back(pt);
                 break;
             }
             rRange += params_.rec_region_sizes[region];
@@ -113,10 +113,10 @@ void RegionEuclideanSegmenter::segment(
     double tolerance = params_.rec_region_initial_tolerance;
     for (size_t region = 0u; region < params_.rec_region_size; ++region) {
         // avoid useless Euclidean Cluster Extraction
-        if (nested_regions[region].size() > params_.rec_min_cluster_size) {
+        if (nested_regions[region].indices.size() > params_.rec_min_cluster_size) {
             // <2> different distance thresholds are applied
-            boost::shared_ptr<std::vector<int> > region_indices(
-                new std::vector<int>(nested_regions[region]));
+            pcl::PointIndices::Ptr region_indices(
+                new pcl::PointIndices(nested_regions[region]));
 
             std::vector<pcl::PointIndices> clusters_indices;
             euclidean_cluster_extractor_.setClusterTolerance(tolerance);
