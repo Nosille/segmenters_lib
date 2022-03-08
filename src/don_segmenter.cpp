@@ -114,5 +114,65 @@ void DoNSegmenter::segment(const PointICloud &cloud_in,
                                                    << "ms.");
 }
 
+void DoNSegmenter::segment(
+    const PointICloud &cloud_in, std::vector<pcl::PointIndices> &clusters_indices) {
+    
+    if (cloud_in.empty()) {
+        ROS_WARN_STREAM("Empty non-ground for segmentation, do nonthing.");
+        return;
+    }
+
+    common::Clock clock;
+    ROS_DEBUG("Starting Difference of Normals segmentation.");
+
+    PointICloudPtr cloud(new PointICloud);
+    *cloud = cloud_in;
+
+    // Set the input pointcloud for the search tree
+    kd_tree_->setInputCloud(cloud);
+
+    // Large/Small Radius Normal Estimation
+    normal_estimator_omp_.setInputCloud(cloud);
+    normal_estimator_omp_.setSearchMethod(kd_tree_);
+
+    // calculate normals with the small scale
+    PointNCloudPtr normal_cloud_small(new PointNCloud);
+    normal_estimator_omp_.setRadiusSearch(params_.don_segmenter_small_scale);
+    normal_estimator_omp_.compute(*normal_cloud_small);
+    // calculate normals with the large scale
+    PointNCloudPtr normal_cloud_large(new PointNCloud);
+    normal_estimator_omp_.setRadiusSearch(params_.don_segmenter_large_scale);
+    normal_estimator_omp_.compute(*normal_cloud_large);
+
+    // Difference of Normals Feature Calculation
+    // create output cloud for DoN results
+    PointNCloudPtr don_cloud(new PointNCloud);
+    pcl::copyPointCloud<PointI, PointN>(*cloud, *don_cloud);
+
+    DoN_estimator_.setInputCloud(cloud);
+    DoN_estimator_.setNormalScaleSmall(normal_cloud_small);
+    DoN_estimator_.setNormalScaleLarge(normal_cloud_large);
+    if (!DoN_estimator_.initCompute()) {
+        ROS_ERROR("Could not intialize DoN feature estimator.");
+        return;
+    }
+    // compute DoN
+    DoN_estimator_.computeFeature(*don_cloud);
+
+    // Difference of Normals Based Filtering
+    PointNCloudPtr don_cloud_filtered(new PointNCloud);
+    range_cond_filter_.setInputCloud(don_cloud);
+    range_cond_filter_.filter(*don_cloud_filtered);
+
+    // Clustering the Results
+    kd_tree_seg_->setInputCloud(don_cloud_filtered);
+    ec_extractor_.setSearchMethod(kd_tree_seg_);
+    ec_extractor_.setInputCloud(don_cloud_filtered);
+    ec_extractor_.extract(clusters_indices);
+
+    ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
+                                                   << "ms.");
+}
+
 }  // namespace segmenter
 }  // namespace autosense

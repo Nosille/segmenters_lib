@@ -29,6 +29,10 @@ class RegionEuclideanSegmenter : public BaseSegmenter {
         const PointICloud &cloud_in,
         std::vector<PointICloudPtr> &cloud_clusters);  // NOLINT
 
+    virtual void segment(
+        const PointICloud &cloud_in,
+        std::vector<pcl::PointIndices> &clusters_indices);  // NOLINT
+
     virtual std::string name() const { return "RegionEuclideanSegmenter"; }
 
  private:

@@ -146,21 +146,16 @@ model_t GroundPlaneFittingSegmenter::estimatePlane(
  * @param cloud_ngnds
  */
 void GroundPlaneFittingSegmenter::mainLoop(const PointICloud& cloud_in,
-                                           PointICloudPtr cloud_gnds,
-                                           PointICloudPtr cloud_ngnds) {
-    cloud_gnds->clear();
-    cloud_ngnds->clear();
-
+                                           pcl::PointIndices &gnds_indices) {
     PointICloudPtr cloud_seeds(new PointICloud);
     extractInitialSeeds(cloud_in, cloud_seeds);
 
-    pcl::PointIndices::Ptr gnds_indices(new pcl::PointIndices);
+    PointICloudPtr cloud_gnds;
     *cloud_gnds = *cloud_seeds;
     for (size_t iter = 0u; iter < params_.gpf_num_iter; ++iter) {
         model_t model = estimatePlane(*cloud_gnds);
         // clear
-        cloud_gnds->clear();
-        gnds_indices->indices.clear();
+        gnds_indices.indices.clear();
         // pointcloud to matrix
         Eigen::MatrixXf cloud_matrix(cloud_in.points.size(), 3);
         size_t pi = 0u;
@@ -174,19 +169,11 @@ void GroundPlaneFittingSegmenter::mainLoop(const PointICloud& cloud_in,
         double th_dist = params_.gpf_th_gnds - model.d;
         for (size_t pt = 0u; pt < dists.rows(); ++pt) {
             if (dists[pt] < th_dist) {
-                gnds_indices->indices.push_back(pt);
+                gnds_indices.indices.push_back(pt);
             }
         }
-        // extract ground points
-        pcl::copyPointCloud(cloud_in, *gnds_indices, *cloud_gnds);
-    }
 
-    // extract non-ground points
-    pcl::ExtractIndices<PointI> indiceExtractor;
-    indiceExtractor.setInputCloud(cloud_in.makeShared());
-    indiceExtractor.setIndices(gnds_indices);
-    indiceExtractor.setNegative(true);
-    indiceExtractor.filter(*cloud_ngnds);
+    }
 }
 
 void GroundPlaneFittingSegmenter::segment(
@@ -195,15 +182,54 @@ void GroundPlaneFittingSegmenter::segment(
         ROS_WARN_STREAM("Empty ground for segmentation, do nonthing.");
         return;
     }
+
+    // Segment Ground
+    std::vector<pcl::PointIndices> clusters_indices;
+    GroundPlaneFittingSegmenter::segment(cloud_in, clusters_indices);
+
     // Clear segments.
     cloud_clusters.clear();
+
+    PointICloudPtr cloud(new PointICloud);
+    *cloud = cloud_in;
+
+   // Create Segmentation objects
+    PointICloudPtr cloud_ground(new PointICloud);
+    PointICloudPtr cloud_nonground(new PointICloud);
+    
+    pcl::PointIndices::Ptr ground_indices(new pcl::PointIndices ());
+    *ground_indices = clusters_indices[0];
+    if (ground_indices->indices.size() > 0) {
+        pcl::ExtractIndices<PointI> indiceExtractor;
+        indiceExtractor.setInputCloud(cloud);
+        indiceExtractor.setIndices(ground_indices);
+
+        // extract ground points
+        indiceExtractor.setNegative(false);
+        indiceExtractor.filter(*cloud_ground);
+
+        // extract non-ground points
+        indiceExtractor.setNegative(true);
+        indiceExtractor.filter(*cloud_nonground);
+    }
+
+    // construct ground/non-ground clusters
+    cloud_clusters.push_back(cloud_ground);
+    cloud_clusters.push_back(cloud_nonground);
+}
+
+void GroundPlaneFittingSegmenter::segment(
+    const PointICloud& cloud_in, std::vector<pcl::PointIndices> &clusters_indices) {
+    if (cloud_in.empty()) {
+        ROS_WARN_STREAM("Empty ground for segmentation, do nonthing.");
+        return;
+    }
 
     common::Clock clock;
     ROS_DEBUG("Starting Ground Plane Fitting segmentation.");
 
     // Main Loop
-    PointICloudPtr cloud_ground(new PointICloud),
-        cloud_nonground(new PointICloud);
+    pcl::PointIndices gnds_indices;
     if (params_.gpf_num_segment > 1) {
         // divide into multi-segments by X-axis
         boost::array<std::vector<int>, segment_upper_bound_> segment_indices;
@@ -231,18 +257,17 @@ void GroundPlaneFittingSegmenter::segment(
             // get pointcloud in different segments
             pcl::copyPointCloud(cloud_in, segment_indices[segmentIdx], *cloud);
 
-            mainLoop(*cloud, gnds, ngnds);
 
-            *cloud_ground += *gnds;
-            *cloud_nonground += *ngnds;
+            mainLoop(*cloud, gnds_indices);
+
         }
     } else {
-        mainLoop(cloud_in, cloud_ground, cloud_nonground);
-    }
 
-    // construct ground/non-ground clusters
-    cloud_clusters.push_back(cloud_ground);
-    cloud_clusters.push_back(cloud_nonground);
+    mainLoop(cloud_in, gnds_indices);
+
+
+    }
+    clusters_indices.push_back(gnds_indices);
 
     ROS_DEBUG_STREAM("GPF Segmentation complete. Took " << clock.takeRealTime()
                                                        << "ms.");

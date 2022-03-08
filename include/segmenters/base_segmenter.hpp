@@ -21,6 +21,10 @@ class BaseSegmenter {
         const PointICloud &cloud_in,
         std::vector<PointICloudPtr> &cloud_clusters) = 0;  // NOLINT
 
+    virtual void segment(
+        const PointICloud &cloud_in,
+        std::vector<pcl::PointIndices> &clusters_indices) = 0;  // NOLINT        
+
     virtual std::string name() const = 0;
 };  // BaseSegmenter
 

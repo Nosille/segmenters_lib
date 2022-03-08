@@ -30,8 +30,36 @@ void EuclideanSegmenter::segment(const PointICloud &cloud_in,
         ROS_WARN_STREAM("Empty non-ground for segmentation, do nonthing.");
         return;
     }
+
+    // Segment
+    std::vector<pcl::PointIndices> clusters_indices;
+    EuclideanSegmenter::segment(cloud_in, clusters_indices);
+
     // Clear segments.
     cloud_clusters.clear();
+
+    PointICloudPtr cloud(new PointICloud);
+    *cloud = cloud_in;
+
+    // extract clusters
+    if (clusters_indices.size() > 0) {
+        for (size_t cluster_idx = 0u; cluster_idx < clusters_indices.size();
+             ++cluster_idx) {
+            PointICloudPtr cluster_cloud(new PointICloud);
+            pcl::copyPointCloud(*cloud, clusters_indices[cluster_idx],
+                                *cluster_cloud);
+            cloud_clusters.push_back(cluster_cloud);
+        }
+    }
+
+}
+
+void EuclideanSegmenter::segment(const PointICloud &cloud_in,
+                                 std::vector<pcl::PointIndices> &clusters_indices) {
+    if (cloud_in.empty()) {
+        ROS_WARN_STREAM("Empty non-ground for segmentation, do nonthing.");
+        return;
+    }
 
     common::Clock clock;
     ROS_DEBUG("Starting Euclidean segmentation.");
@@ -39,21 +67,9 @@ void EuclideanSegmenter::segment(const PointICloud &cloud_in,
     PointICloudPtr cloud(new PointICloud);
     *cloud = cloud_in;
 
-    std::vector<pcl::PointIndices> cluster_indices;
-
     // extract clusters
     euclidean_cluster_extractor_.setInputCloud(cloud);
-    euclidean_cluster_extractor_.extract(cluster_indices);
-
-    if (cluster_indices.size() > 0) {
-        for (size_t cluster_idx = 0u; cluster_idx < cluster_indices.size();
-             ++cluster_idx) {
-            PointICloudPtr cluster_cloud(new PointICloud);
-            pcl::copyPointCloud(*cloud, cluster_indices[cluster_idx],
-                                *cluster_cloud);
-            cloud_clusters.push_back(cluster_cloud);
-        }
-    }
+    euclidean_cluster_extractor_.extract(clusters_indices);
 
     ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
                                                    << "ms.");

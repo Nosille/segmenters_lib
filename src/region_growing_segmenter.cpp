@@ -62,8 +62,47 @@ void RegionGrowingSegmenter::segment(
         ROS_WARN_STREAM("Empty non-ground for segmentation, do nonthing.");
         return;
     }
+
+    // Segment 
+    std::vector<pcl::PointIndices> clusters_indices;
+    RegionGrowingSegmenter::segment(cloud_in, clusters_indices);
+
     // Clear segments.
     cloud_clusters.clear();
+
+    PointICloudPtr cloud(new PointICloud);
+    *cloud = cloud_in;
+
+    std::vector<pcl::PointIndices>::const_iterator iter =
+        clusters_indices.begin();
+    for (; iter != clusters_indices.end(); ++iter) {
+        PointICloudPtr cluster(new PointICloud);
+        pcl::copyPointCloud(*cloud, *iter, *cluster);
+
+        cloud_clusters.push_back(cluster);
+    }
+
+    /*if (care_indices->indices.size()) {
+        pcl::ExtractIndices<Point> indiceExtractor;
+        indiceExtractor.setInputCloud(cloud);
+        indiceExtractor.setIndices(care_indices);
+        indiceExtractor.setNegative(true);
+        indiceExtractor.filter(*cloud_nonground);
+        pc_clusters.push_back(cloud_nonground);
+
+        indiceExtractor.setNegative(false);
+        indiceExtractor.filter(*cloud_ground);
+        pc_clusters.push_back(cloud_ground);
+    }*/
+
+}
+
+void RegionGrowingSegmenter::segment(
+    const PointICloud &cloud_in, std::vector<pcl::PointIndices> &clusters_indices) {
+    if (cloud_in.empty()) {
+        ROS_WARN_STREAM("Empty non-ground for segmentation, do nonthing.");
+        return;
+    }
 
     common::Clock clock;
     ROS_DEBUG("Starting region growing segmentation.");
@@ -96,30 +135,9 @@ void RegionGrowingSegmenter::segment(
     region_growing_estimator_.setInputCloud(cloud);
     region_growing_estimator_.setInputNormals(normals);
     region_growing_estimator_.setIndices(care_indices);
-    std::vector<pcl::PointIndices> clusters_indices;
+
     region_growing_estimator_.extract(clusters_indices);
-    std::vector<pcl::PointIndices>::const_iterator iter =
-        clusters_indices.begin();
-    for (; iter != clusters_indices.end(); ++iter) {
-        PointICloudPtr cluster(new PointICloud);
-        pcl::copyPointCloud(*cloud, *iter, *cluster);
-
-        cloud_clusters.push_back(cluster);
-    }
-
-    /*if (care_indices->indices.size()) {
-        pcl::ExtractIndices<Point> indiceExtractor;
-        indiceExtractor.setInputCloud(cloud);
-        indiceExtractor.setIndices(care_indices);
-        indiceExtractor.setNegative(true);
-        indiceExtractor.filter(*cloud_nonground);
-        pc_clusters.push_back(cloud_nonground);
-
-        indiceExtractor.setNegative(false);
-        indiceExtractor.filter(*cloud_ground);
-        pc_clusters.push_back(cloud_ground);
-    }*/
-
+    
     ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
                                                    << "ms.");
 }

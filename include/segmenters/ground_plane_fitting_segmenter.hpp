@@ -38,6 +38,10 @@ class GroundPlaneFittingSegmenter : public BaseSegmenter {
         const PointICloud &cloud_in,
         std::vector<PointICloudPtr> &cloud_clusters);  // NOLINT
 
+    virtual void segment(
+        const PointICloud &cloud_in,
+        std::vector<pcl::PointIndices> &clusters_indices);  // NOLINT        
+
     virtual std::string name() const { return "GroundPlaneFittingSegmenter"; }
 
  private:
@@ -47,8 +51,7 @@ class GroundPlaneFittingSegmenter : public BaseSegmenter {
     model_t estimatePlane(const PointICloud &cloud_ground);
 
     void mainLoop(const PointICloud &cloud_in,
-                  PointICloudPtr cloud_gnds,
-                  PointICloudPtr cloud_ngnds);
+                  pcl::PointIndices &gnds_indices);
 
  private:
     SegmenterParams params_;

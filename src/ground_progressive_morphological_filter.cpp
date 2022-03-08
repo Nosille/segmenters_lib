@@ -43,36 +43,26 @@ void GroundProgressiveMorphologicalFilter::segment(
         ROS_WARN_STREAM("Empty ground for segmentation, do nothing.");
         return;
     }
+
+    // Segment Ground
+    std::vector<pcl::PointIndices> clusters_indices;
+    GroundProgressiveMorphologicalFilter::segment(cloud_in, clusters_indices);
+
     // Clear segments.
     cloud_clusters.clear();
-    bool ground_removed = false;
-
-    common::Clock clock;
-    ROS_DEBUG("Starting GroundProgressiveMorphologicalFilter.");
 
     PointICloudPtr cloud(new PointICloud);
     *cloud = cloud_in;
 
-    // Create the filtering object
-    pcl::PointCloud<PointI>::Ptr cloud_filtered (new pcl::PointCloud<PointI>);
-    pcl::StatisticalOutlierRemoval<PointI> sor;
-    sor.setInputCloud(cloud);
-    sor.setMeanK(params_.pmf_meanK);
-    sor.setStddevMulThresh(params_.pmf_std);
-    sor.filter(*cloud_filtered);
-
     // Create Segmentation objects
     PointICloudPtr cloud_ground(new PointICloud);
     PointICloudPtr cloud_nonground(new PointICloud);
-    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr ground_indices(new pcl::PointIndices);
-
-    pmf_estimator_.setInputCloud(cloud_filtered);
-    pmf_estimator_.extract(ground_indices->indices);
-
+    
+    pcl::PointIndices::Ptr ground_indices(new pcl::PointIndices ());
+    *ground_indices = clusters_indices[0];
     if (ground_indices->indices.size() > 0) {
         pcl::ExtractIndices<PointI> indiceExtractor;
-        indiceExtractor.setInputCloud(cloud_filtered);
+        indiceExtractor.setInputCloud(cloud);
         indiceExtractor.setIndices(ground_indices);
 
         // extract ground points
@@ -82,12 +72,44 @@ void GroundProgressiveMorphologicalFilter::segment(
         // extract non-ground points
         indiceExtractor.setNegative(true);
         indiceExtractor.filter(*cloud_nonground);
-
-        ground_removed = true;
     }
 
     cloud_clusters.push_back(cloud_ground);
     cloud_clusters.push_back(cloud_nonground);
+}
+
+void GroundProgressiveMorphologicalFilter::segment(
+    const PointICloud &cloud_in, std::vector<pcl::PointIndices> &clusters_indices) {
+    if (cloud_in.empty()) {
+        ROS_WARN_STREAM("Empty ground for segmentation, do nothing.");
+        return;
+    }
+
+    common::Clock clock;
+    ROS_DEBUG("Starting GroundProgressiveMorphologicalFilter.");
+
+    PointICloudPtr cloud(new PointICloud);
+    *cloud = cloud_in;
+
+    // Create the filtering object
+    pcl::PointCloud<PointI>::Ptr cloud_filtered (new pcl::PointCloud<PointI>);
+    pcl::PointIndices::Ptr indices_filtered (new pcl::PointIndices);
+    pcl::StatisticalOutlierRemoval<PointI> sor;
+    sor.setInputCloud(cloud);
+    sor.setMeanK(params_.pmf_meanK);
+    sor.setStddevMulThresh(params_.pmf_std);
+    sor.filter(indices_filtered->indices);
+
+    // Create Segmentation objects
+    PointICloudPtr cloud_ground(new PointICloud);
+    PointICloudPtr cloud_nonground(new PointICloud);
+    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+    pcl::PointIndices ground_indices;
+    pmf_estimator_.setInputCloud(cloud);
+    pmf_estimator_.setIndices(indices_filtered);
+    pmf_estimator_.extract(ground_indices.indices);
+
+    clusters_indices.push_back(ground_indices);
 
     ROS_DEBUG_STREAM("Segmentation complete. Took " << clock.takeRealTime()
                                                    << "ms.");
