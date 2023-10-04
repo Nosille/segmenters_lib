@@ -5,6 +5,7 @@
 #ifndef SEGMENTERS_INCLUDE_SEGMENTERS_REGION_GROWING_SEGMENTER_HPP_
 #define SEGMENTERS_INCLUDE_SEGMENTERS_REGION_GROWING_SEGMENTER_HPP_
 
+#include <pcl/common/io.h>
 #include <pcl/features/normal_3d_omp.h>       // pcl::NormalEstimationOMP
 #include <pcl/search/kdtree.h>                // pcl::search::KdTree
 #include <pcl/segmentation/region_growing.h>  // pcl::RegionGrowing
